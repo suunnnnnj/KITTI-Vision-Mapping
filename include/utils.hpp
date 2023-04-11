@@ -3,6 +3,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <string>
 #include <vector>
