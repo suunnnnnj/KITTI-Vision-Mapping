@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-std::vector<std::string> listidr(const std::string &directoryPath, const std::string &extension)
+std::vector<std::string> listdir(const std::string &directoryPath, const std::string &extension)
 {
     std::vector<std::string> list;
 
@@ -22,11 +22,17 @@ std::vector<std::string> listidr(const std::string &directoryPath, const std::st
     return list;
 }
 
-// template <typename N>
-// std::string zeroPadding(const N &number, const int numberOfZeros)
-// {
-//     std::string count_str = std::to_string(number);
-//     std::string padded_str = std::string(numberOfZeros - count_str.length(), '0') + count_str;
+std::vector<std::string> tokenize(std::string context, const std::string &delim)
+{
+    std::vector<std::string> tokens;
 
-//     return padded_str;
-// }
+    size_t pos = 0;
+
+    while ((pos = context.find(delim)) != std::string::npos)
+    {
+        tokens.push_back(context.substr(0, pos));
+        context.erase(0, pos + delim.length());
+    }
+
+    return tokens;
+}
