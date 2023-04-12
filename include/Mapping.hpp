@@ -3,7 +3,8 @@
 
 #include "utils.hpp"
 
-#include "iostream"
+#include <iostream>
+
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
@@ -15,26 +16,29 @@ class KITTI_MAPPING
 
         KITTI_MAPPING(const std::string &dataPath, const int &sequence){
             
-            std::string lidarPath, imagePath, timesPath, posePath, calibPath;
+            std::string lidarPath, imagePath, timesPath, posesPath, calibPath;
 
             lidarPath = dataPath + "/data_odometry_velodyne/dataset/" + zeroPadding(sequence, 2) + "/velodyne";
             imagePath = dataPath + "/data_odometry_gray/dataset/sequences/" + zeroPadding(sequence, 2) + "/image_1"; // Need to change;
             timesPath = dataPath + "/data_odometry_calib/dataset/sequences/"  + zeroPadding(sequence, 2) + "/times.txt";;
 
-            posePath  = dataPath + "/data_odometry_poses/dataset/poses/"  + zeroPadding(sequence, 2) + ".txt";
+            posesPath = dataPath + "/data_odometry_poses/dataset/poses/"  + zeroPadding(sequence, 2) + ".txt";
             calibPath = dataPath + "/data_odometry_calib/dataset/sequences/"  + zeroPadding(sequence, 2) + "/calib.txt";
 
             lidar_ = listdir(lidarPath, ".bin");
             image_ = listdir(imagePath, ".png");
 
             loadCalibData(calibPath);
-            loadPosesData(posePath);
-            loadCalibData(calibPath);
+            loadPosesData(posesPath);
+            loadTimesData(timesPath);
         };
 
         KITTI_MAPPING(){
 
         };
+
+
+        mapping();
 
 
     private:
@@ -47,12 +51,14 @@ class KITTI_MAPPING
             cv::Mat K;
         };
         
-        std::vector<std::string> lidar_, image_, times_;
+        std::vector<std::string> lidar_, image_;
+        std::vector<double> times_;
+        std::vector<cv::Mat> poses_;
 
         calib calib_;
 
         void loadTimesData(const std::string &timesPath);
-        void loadPosesData(const std::string &posePath);
+        void loadPosesData(const std::string &posesPath);
         void loadCalibData(const std::string &calibPath);
 };
 
