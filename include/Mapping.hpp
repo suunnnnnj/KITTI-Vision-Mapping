@@ -2,13 +2,7 @@
 #define MAPPING_HPP
 
 #include "utils.hpp"
-
-#include <iostream>
-
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-
-#include <opencv2/opencv.hpp>
+#include "tqdm.h"
 
 class KITTI_MAPPING
 {
@@ -31,35 +25,51 @@ class KITTI_MAPPING
             loadCalibData(calibPath);
             loadPosesData(posesPath);
             loadTimesData(timesPath);
+
+            if(!all_equal(lidar_.size(), image_.size(), poses_.size(), times_.size()))
+            {
+                std::cout << "Data leak." << std::endl;
+                std::cout << "You need to check Dataset..." << std::endl;
+                std::cout << "lidar.size() = " << lidar_.size() << std::endl;
+                std::cout << "image.size() = " << image_.size() << std::endl;
+                std::cout << "poses.size() = " << poses_.size() << std::endl;
+                std::cout << "times.size() = " << times_.size() << std::endl;
+                exit(-1);
+            }
+
+            nof_ = lidar_.size();
         };
 
         KITTI_MAPPING(){
 
         };
 
-
-        mapping();
-
+        void Mapping();
+        void Visualization();
 
     private:
 
         struct calib
         {
-            cv::Mat Intrinsic;
-            cv::Mat Extrinsic_R;
-            cv::Mat Extrinsic_T;
-            cv::Mat K;
+            Eigen3x4d K;
         };
-        
+
+        struct pt
+        {
+            float x, y, z, intensity;
+        };
+
         std::vector<std::string> lidar_, image_;
         std::vector<double> times_;
-        std::vector<cv::Mat> poses_;
+        std::vector<Eigen3x4d> poses_;
 
         calib calib_;
 
         void loadTimesData(const std::string &timesPath);
         void loadPosesData(const std::string &posesPath);
         void loadCalibData(const std::string &calibPath);
+
+        double nof_; // number of frame;
 };
 
 #endif

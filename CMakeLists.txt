@@ -20,5 +20,5 @@ include_directories(include ${PCL_INCLUDE_DIRS} ${OpenCV_LIBS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable (KITTI-Vision-Mapping main.cpp src/IO.cpp src/Mapping.cpp src/utils.cpp)
+add_executable (KITTI-Vision-Mapping main.cpp src/Mapping.cpp src/utils.cpp)
 target_link_libraries (KITTI-Vision-Mapping ${OpenCV_LIBS} ${PCL_LIBRARIES} ${libLAS_LIBRARIES})

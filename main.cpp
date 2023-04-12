@@ -6,4 +6,5 @@ int main(int argc, char const *argv[])
     int sequence = std::stoi(argv[2]);
 
     KITTI_MAPPING kitti(dataPath, sequence);
+    kitti.Mapping();
 }
