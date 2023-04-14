@@ -8,8 +8,13 @@ class KITTI_MAPPING
 {
     public:
 
-        KITTI_MAPPING(const std::string &dataPath, const int &sequence){
+        KITTI_MAPPING(const std::string &dataPath, const std::string &savePath, const int &sequence){
             
+            savePath_ = savePath + "/" + zeroPadding(sequence, 2) + "/";
+            
+            if(!boost::filesystem::exists(savePath_))
+                boost::filesystem::create_directories(savePath_);
+
             std::string lidarPath, imagePath, timesPath, posesPath, calibPath;
 
             lidarPath = dataPath + "/data_odometry_velodyne/dataset/" + zeroPadding(sequence, 2) + "/velodyne";
@@ -58,6 +63,8 @@ class KITTI_MAPPING
         {
             float x, y, z, intensity;
         };
+
+        std::string savePath_;
 
         std::vector<std::string> lidar_, image_;
         std::vector<double> times_;

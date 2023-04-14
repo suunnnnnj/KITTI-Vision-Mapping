@@ -83,14 +83,10 @@ void KITTI_MAPPING::loadCalibData(const std::string &calibPath)
 
 void KITTI_MAPPING::Mapping()
 {
-    std::cout << "---- Mapping Start ----" << std::endl;
-
     tqdm bar;
-
     pcl::PointCloud<pcl::PointXYZRGBI>::Ptr map(new pcl::PointCloud<pcl::PointXYZRGBI>());
 
-    int mapIdx = 0;
-
+    int mIdx = 0;
     for(int fIdx = 0; fIdx < nof_; fIdx++)
     {
         bar.progress(fIdx, nof_);
@@ -114,13 +110,13 @@ void KITTI_MAPPING::Mapping()
             Eigen4x1d camera_h; 
             camera_h << camera(0), camera(1), camera(2), 1;
 
-            Eigen3x1d pt_world  = poses_[fIdx] * camera_h;
+            Eigen3x1d world = poses_[fIdx] * camera_h;
 
             pcl::PointXYZRGBI pcl_pt;
 
-            pcl_pt.x = pt_world(0);
-            pcl_pt.y = pt_world(1);
-            pcl_pt.z = pt_world(2);
+            pcl_pt.x = world(0);
+            pcl_pt.y = world(1);
+            pcl_pt.z = world(2);
             pcl_pt.intensity = pt_.intensity;
             pcl_pt.r = 0;
             pcl_pt.g = 0;
@@ -131,15 +127,18 @@ void KITTI_MAPPING::Mapping()
 
         if(fIdx != 0 && fIdx % 100 == 0)
         {
-            std::string mapPath = "/media/sunj/0ea24735-792d-4934-9ab5-7fdfc57822f6/data/KITTI/data_odometry_map/01/" + zeroPadding(mapIdx, 2) + ".las";
-            pcl2las(mapPath, map, 0, 0, 0);
+            std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".pcd";
+            pcl::io::savePCDFileBinary(mapPath, *map);
             map->points.clear();
-            mapIdx++;
+            mIdx++;
         }
     }
 
-    std::string mapPath = "/media/sunj/0ea24735-792d-4934-9ab5-7fdfc57822f6/data/KITTI/data_odometry_map/01/" + zeroPadding(mapIdx, 2) + ".las";
-    pcl2las(mapPath, map, 0, 0, 0);
+    if( map->points.size() > 0 )
+    {
+        std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".pcd";
+        pcl::io::savePCDFileBinary(mapPath, *map);
+    }
 
     return;
 }
