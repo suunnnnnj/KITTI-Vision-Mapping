@@ -59,20 +59,25 @@ void KITTI_MAPPING::loadCalibData(const std::string &calibPath)
         std::string line;
         while(std::getline(ifs, line))
         {
-            calib c;
+            calib calibration;
             std::vector<std::string> tokens;
 
             tokens = tokenize(line);
 
-            Eigen3x4d K;
+            cv::Mat Projection, Intrinsic, Rotation, Translation;
+
+            Projection = (cv::Mat_<double>(3, 4) << boost::lexical_cast<double>(tokens[1]), boost::lexical_cast<double>(tokens[2]), boost::lexical_cast<double>(tokens[3]), boost::lexical_cast<double>(tokens[4]),
+                                                    boost::lexical_cast<double>(tokens[5]), boost::lexical_cast<double>(tokens[6]), boost::lexical_cast<double>(tokens[7]), boost::lexical_cast<double>(tokens[8]),
+                                                    boost::lexical_cast<double>(tokens[9]), boost::lexical_cast<double>(tokens[10]), boost::lexical_cast<double>(tokens[11]), boost::lexical_cast<double>(tokens[12]));
+            cv::decomposeProjectionMatrix(Projection, Intrinsic, Rotation, Translation);
+
+            cv::cv2eigen( Projection, calibration.P );
+            cv::cv2eigen( Intrinsic, calibration.K );
+            cv::cv2eigen( Rotation, calibration.R );
+
+            calibration.t << Translation.at<double>(0, 0) / Translation.at<double>(0, 3), Translation.at<double>(0, 1) / Translation.at<double>(0, 2) / Translation.at<double>(0, 3);
             
-            K << boost::lexical_cast<double>(tokens[1]), boost::lexical_cast<double>(tokens[2]), boost::lexical_cast<double>(tokens[3]), boost::lexical_cast<double>(tokens[4]),
-                boost::lexical_cast<double>(tokens[5]), boost::lexical_cast<double>(tokens[6]), boost::lexical_cast<double>(tokens[7]), boost::lexical_cast<double>(tokens[8]),
-                boost::lexical_cast<double>(tokens[9]), boost::lexical_cast<double>(tokens[10]), boost::lexical_cast<double>(tokens[11]), boost::lexical_cast<double>(tokens[12]);
-
-            c.K = K;
-
-            calib_.push_back(c);
+            calib_.push_back(calibration);
         }
     }
 
@@ -105,7 +110,7 @@ void KITTI_MAPPING::Mapping()
             Eigen4x1d lidar_h;
             lidar_h << pt_.x, pt_.y, pt_.z, 1; 
 
-            Eigen3x1d camera = calib_[4].K * lidar_h;
+            Eigen3x1d camera = calib_[4].P * lidar_h;
             
             Eigen4x1d camera_h; 
             camera_h << camera(0), camera(1), camera(2), 1;

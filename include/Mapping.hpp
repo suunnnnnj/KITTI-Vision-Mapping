@@ -4,6 +4,8 @@
 #include "utils.hpp"
 #include "tqdm.h"
 
+#include <opencv2/core/eigen.hpp>
+
 class KITTI_MAPPING
 {
     public:
@@ -56,7 +58,10 @@ class KITTI_MAPPING
 
         struct calib
         {
-            Eigen3x4d K;
+            Eigen3x4d P; // camera projection matrix
+            Eigen3x3d K; // Intrinsic matrix;
+            Eigen3x3d R; // rotation matrix
+            Eigen3x1d t; // translation matrix;
         };
 
         struct pt
