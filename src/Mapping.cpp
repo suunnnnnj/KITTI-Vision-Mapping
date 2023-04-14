@@ -57,20 +57,23 @@ void KITTI_MAPPING::loadCalibData(const std::string &calibPath)
     if(ifs.is_open())
     {
         std::string line;
-        std::getline(ifs, line);
-        std::getline(ifs, line); // image_1;
-        
-        std::vector<std::string> tokens;
+        while(std::getline(ifs, line))
+        {
+            calib c;
+            std::vector<std::string> tokens;
 
-        tokens = tokenize(line);
+            tokens = tokenize(line);
 
-        Eigen3x4d K;
-        
-        K << boost::lexical_cast<double>(tokens[1]), boost::lexical_cast<double>(tokens[2]), boost::lexical_cast<double>(tokens[3]), boost::lexical_cast<double>(tokens[4]),
-             boost::lexical_cast<double>(tokens[5]), boost::lexical_cast<double>(tokens[6]), boost::lexical_cast<double>(tokens[7]), boost::lexical_cast<double>(tokens[8]),
-             boost::lexical_cast<double>(tokens[9]), boost::lexical_cast<double>(tokens[10]), boost::lexical_cast<double>(tokens[11]), boost::lexical_cast<double>(tokens[12]);
-        
-        calib_.K = K;
+            Eigen3x4d K;
+            
+            K << boost::lexical_cast<double>(tokens[1]), boost::lexical_cast<double>(tokens[2]), boost::lexical_cast<double>(tokens[3]), boost::lexical_cast<double>(tokens[4]),
+                boost::lexical_cast<double>(tokens[5]), boost::lexical_cast<double>(tokens[6]), boost::lexical_cast<double>(tokens[7]), boost::lexical_cast<double>(tokens[8]),
+                boost::lexical_cast<double>(tokens[9]), boost::lexical_cast<double>(tokens[10]), boost::lexical_cast<double>(tokens[11]), boost::lexical_cast<double>(tokens[12]);
+
+            c.K = K;
+
+            calib_.push_back(c);
+        }
     }
 
     ifs.close();
@@ -101,17 +104,17 @@ void KITTI_MAPPING::Mapping()
         for(int ptIdx = 0 ; ptIdx < nop; ptIdx++)
         {
             pt pt_;
-            lidar.read((char*)&pt_, sizeof(pt));
+            lidar.read((char*)&pt_, sizeof(pt_));
 
-            Eigen4x1d pt_lidar;
-            pt_lidar << pt_.x, pt_.y, pt_.z, pt_.intensity; 
+            Eigen4x1d lidar_h;
+            lidar_h << pt_.x, pt_.y, pt_.z, 1; 
 
-            Eigen3x1d pt_camera = calib_.K * pt_lidar;
+            Eigen3x1d camera = calib_[4].K * lidar_h;
             
-            Eigen4x1d pt_camera_h; 
-            pt_camera_h << pt_camera(0), pt_camera(1), pt_camera(2), 1;
+            Eigen4x1d camera_h; 
+            camera_h << camera(0), camera(1), camera(2), 1;
 
-            Eigen3x1d pt_world  = poses_[fIdx] * pt_camera_h;
+            Eigen3x1d pt_world  = poses_[fIdx] * camera_h;
 
             pcl::PointXYZRGBI pcl_pt;
 
@@ -119,6 +122,9 @@ void KITTI_MAPPING::Mapping()
             pcl_pt.y = pt_world(1);
             pcl_pt.z = pt_world(2);
             pcl_pt.intensity = pt_.intensity;
+            pcl_pt.r = 0;
+            pcl_pt.g = 0;
+            pcl_pt.b = 0;
 
             map->points.push_back(pcl_pt);
         }

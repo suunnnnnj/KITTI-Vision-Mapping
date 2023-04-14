@@ -63,7 +63,7 @@ class KITTI_MAPPING
         std::vector<double> times_;
         std::vector<Eigen3x4d> poses_;
 
-        calib calib_;
+        std::vector<calib> calib_;
 
         void loadTimesData(const std::string &timesPath);
         void loadPosesData(const std::string &posesPath);

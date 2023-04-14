@@ -42,7 +42,7 @@ void pcl2las(const std::string &lasPath, pcl::PointCloud<pcl::PointXYZRGBI>::Ptr
     liblas::Header header;
     header.SetDataFormatId(liblas::ePointFormat3);
     header.SetOffset(shift_x, shift_y, shift_z);
-    header.SetScale(0.001, 0.001, 0.001);
+    header.SetScale(0.01, 0.01, 0.01);
 
     liblas::Writer writer(ofs, header);
 
