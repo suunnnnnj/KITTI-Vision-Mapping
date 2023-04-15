@@ -122,7 +122,7 @@ void KITTI_MAPPING::Mapping()
             pcl_pt.x = world(0);
             pcl_pt.y = world(1);
             pcl_pt.z = world(2);
-            pcl_pt.intensity = pt_.intensity;
+            pcl_pt.intensity = pt_.intensity * 255.0;
             pcl_pt.r = 0;
             pcl_pt.g = 0;
             pcl_pt.b = 0;
@@ -132,8 +132,14 @@ void KITTI_MAPPING::Mapping()
 
         if(fIdx != 0 && fIdx % 100 == 0)
         {
-            std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".pcd";
-            pcl::io::savePCDFileBinary(mapPath, *map);
+            // save .pcd format;
+            // std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".pcd";
+            // pcl::io::savePCDFileBinary(mapPath, *map);
+
+            // save .las format
+            std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".las";
+            pcl2las(mapPath, map, 0, 0, 0);
+
             map->points.clear();
             mIdx++;
         }
@@ -141,8 +147,13 @@ void KITTI_MAPPING::Mapping()
 
     if( map->points.size() > 0 )
     {
-        std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".pcd";
-        pcl::io::savePCDFileBinary(mapPath, *map);
+        // save .pcd format;
+        // std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".pcd";
+        // pcl::io::savePCDFileBinary(mapPath, *map);
+
+        // save .las format
+        std::string mapPath = savePath_ + zeroPadding(mIdx, 2) + ".las";
+        pcl2las(mapPath, map, 0, 0, 0);
     }
 
     return;

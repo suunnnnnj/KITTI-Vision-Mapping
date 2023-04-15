@@ -16,7 +16,7 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-include_directories(include ${PCL_INCLUDE_DIRS} ${OpenCV_LIBS})
+include_directories(include include/utils ${PCL_INCLUDE_DIRS} ${OpenCV_LIBS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
