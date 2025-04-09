@@ -1,24 +1,77 @@
-cmake_minimum_required(VERSION 3.2)
-set(CMAKE_BUILD_TYPE Release)
-add_compile_options(-std=c++14)
+cmake_minimum_required(VERSION 3.12)
+project(KITTI_Vision_Mapping VERSION 0.1 LANGUAGES CXX)
 
-project(KITTI-Vision-Mapping)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(PCL REQUIRED)
 find_package(libLAS REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(OpenMP)
 
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+# add custom FindXXX modules
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+
+include_directories(
+  ${PCL_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/include
+)
+
+# IO library: image and pose loading
+add_library(io
+  src/io/ImageLoader.cpp
+  src/io/PoseLoader.cpp
+)
+target_include_directories(io PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
+target_link_libraries(io PUBLIC
+  ${OpenCV_LIBS}
+)
+
+# Utility functions: math, filesystem, progress bar
+add_library(utils
+  src/utils/math.cpp
+  src/utils/fs.cpp
+  src/utils/progress.cpp
+)
+target_include_directories(utils PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
+
+# Core mapping logic
+add_library(core
+  src/core/Mapper.cpp
+)
+target_include_directories(core PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
+target_link_libraries(core PUBLIC
+  io
+  utils
+  ${PCL_LIBRARIES}
+  ${libLAS_LIBRARIES}
+)
+
+# Executable target
+add_executable(kitti_mapper
+  main.cpp
+)
+target_link_libraries(kitti_mapper PRIVATE
+  core
+)
+
+# Link OpenMP if available
+if (OpenMP_CXX_FOUND)
+  target_link_libraries(kitti_mapper PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
-include_directories(include include/utils ${PCL_INCLUDE_DIRS} ${OpenCV_LIBS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+install(TARGETS kitti_mapper
+  RUNTIME DESTINATION bin
+)
+install(DIRECTORY include/ DESTINATION include)
 
-add_executable (KITTI-Vision-Mapping main.cpp src/Mapping.cpp src/utils.cpp)
-target_link_libraries (KITTI-Vision-Mapping ${OpenCV_LIBS} ${PCL_LIBRARIES} ${libLAS_LIBRARIES})
